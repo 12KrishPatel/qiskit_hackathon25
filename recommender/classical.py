@@ -116,3 +116,34 @@ if __name__ == "__main__":
     user_ratings = userItem.loc[sampleUser].dropna().sort_values(ascending=False).head(5)
     for item, rating in user_ratings.items():
         print(f"  • {item:45s}  rating: {rating:.1f}")
+
+
+
+# Flask Wrapper
+def build_recommender_for_api():
+    """
+    Wrapper that initializes and stores userItem + itemSim so Flask
+    can call recommendItems() without re-running the entire script.
+    """
+    dataFolder = Path("data/ml-100k")
+    df = loadMovieLens(dataFolder)
+    userItem = build_user_item(df)
+    itemSim = computeAdjustedSimilarity(userItem)
+    
+    return userItem, itemSim
+
+
+def recommend_for_user(user_id, userItem, itemSim, topN=5, k=30):
+    """
+    Simple function exposed for Flask backend.
+    Returns a Python dict of recommendations.
+    """
+    recs = recommendItems(
+        userItem=userItem,
+        itemSim=itemSim,
+        userId=user_id,
+        topN=topN,
+        k=k
+    )
+
+    return recs.to_dict()
