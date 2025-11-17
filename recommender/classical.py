@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from sklearn.metrics.pairwise import cosine_similarity
+from recommender.subset import topnmSubset
 
 # Load MovieLens dataset
 def loadMovieLens(dataFolder: Path) -> pd.DataFrame:
@@ -116,3 +117,7 @@ if __name__ == "__main__":
     user_ratings = userItem.loc[sampleUser].dropna().sort_values(ascending=False).head(5)
     for item, rating in user_ratings.items():
         print(f"  • {item:45s}  rating: {rating:.1f}")
+
+    df = topnmSubset(df, topUsers=100, topItems=100)
+
+    print(f"✅ Loaded subset: {len(df):,} ratings, {df['user'].nunique()} users, {df['item'].nunique()} movies")
