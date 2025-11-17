@@ -6,7 +6,7 @@ from recommender.classical import loadMovieLens
 from recommender.hybrid import hybrid_recommend
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 df = loadMovieLens(Path("data/ml-100k"))
 
@@ -14,6 +14,12 @@ df = loadMovieLens(Path("data/ml-100k"))
 @app.get("/")
 def health():
     return {"status": "ok", "message": "Backend running"}
+
+@app.get("/movies")
+def movies():
+    titles = sorted(df['item'].unique())
+    return jsonify(titles)
+
 
 
 @app.post("/recommend")

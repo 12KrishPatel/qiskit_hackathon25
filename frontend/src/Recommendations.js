@@ -1,78 +1,49 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-function Recommendations() {
-  const [userId, setUserId] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [recs, setRecs] = useState([]);
+function Recommendations({ ratings }) {
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
+	const [results, setResults] = useState(null);
 
-  const fetchRecommendations = async () => {
-    setLoading(true);
-    setError("");
-    setRecs([]);
+	const fetchRecommendations = async () => {
+		setLoading(true);
+		setError("");
+		setResults(null);
 
-    try {
-      const response = await axios.post("http://127.0.0.1:5000/api/recommend", {
-        userId: Number(userId),
-      });
+		try {
+			const res = await axios.post("http://localhost:5001/recommend", {
+				ratings: ratings
+			});
 
-      const recommendations = response.data.recommendations || {};
-      const formatted = Object.entries(recommendations);
+			setResults(res.data);
+		} catch (err) {
+			console.error(err);
+			setError("Failed to fetch recommendations.");
+		} finally {
+			setLoading(false);
+		}
+	};
 
-      setRecs(formatted);
-    } catch (err) {
-      setError("Failed to fetch recommendations.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+	return (
+		<div style={{ padding: 20 }}>
+			<h2>Get Recommendations</h2>
+			<button onClick={fetchRecommendations}>Get Recommendations</button>
 
-  return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h1>🎬 Movie Recommendations</h1>
+			{loading && <p>Loading...</p>}
+			{error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* USER INPUT */}
-      <div style={{ marginBottom: "15px" }}>
-        <label>User ID:</label>
-        <input
-          type="number"
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-          style={{ marginLeft: "10px", width: "80px" }}
-        />
+			{results && (
+				<div style={{ marginTop: 20 }}>
+					<h3>Classical Recommendations</h3>
+					<pre>{JSON.stringify(results.classical, null, 2)}</pre>
 
-        <button
-          onClick={fetchRecommendations}
-          style={{ marginLeft: "15px", padding: "6px 12px" }}
-        >
-          Get Recommendations
-        </button>
-      </div>
-
-      {/* LOADING */}
-      {loading && <p>Loading...</p>}
-
-      {/* ERROR */}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {/* RESULTS */}
-      {!loading && recs.length > 0 && (
-        <div>
-          <h2>Top Recommendations:</h2>
-          <ul>
-            {recs.map(([movie, score]) => (
-              <li key={movie}>
-                <strong>{movie}</strong> — predicted rating:{" "}
-                {Number(score).toFixed(2)}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
+					<h3>Quantum Recommendations</h3>
+					<pre>{JSON.stringify(results.quantum, null, 2)}</pre>
+				</div>
+			)}
+		</div>
+	);
 }
 
 export default Recommendations;
