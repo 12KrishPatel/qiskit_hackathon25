@@ -1,35 +1,45 @@
 import pandas as pd
-from pathlib import Path
+import numpy as np
 
 from recommender.classical import (
-    loadMovieLens, build_user_item, computeAdjustedSimilarity, recommendItems
+    build_user_item,
+    computeAdjustedSimilarity,
+    recommendItems,
 )
 from recommender.quantum import recommended_quantum
 
-def hybrid_recommend(df: pd.DataFrame, userId: int, top_classical: int = 5):
+
+def hybrid_recommend(
+    df: pd.DataFrame,
+    external_ratings: dict,
+    topK: int = 5,
+):
+    """
+    external_ratings: dict like:
+        {
+            "Interstellar": 5,
+            "Inception": 4,
+            "Pulp Fiction": 2
+        }
+    """
+
+    if not external_ratings:
+        raise ValueError("No external ratings given.")
+
+    ext_series = pd.Series(external_ratings)
+
     userItem = build_user_item(df)
     sim = computeAdjustedSimilarity(userItem)
 
-    classical = recommendItems(userItem, sim, userId, topN=top_classical, k=30)
-    classical = classical.head(min(len(classical), top_classical))
-
-    items = classical.index.tolist()
-
+    # We only need similarity values for the items user rated
+    items = ext_series.index
     sim_subset = sim.loc[items, items]
 
+    # Classical Top-N using similarity
+    classical = ext_series.sort_values(ascending=False).head(topK)
+
+
+    # Quantum optimization over the classical top items
     quantum = recommended_quantum(classical, sim_subset)
+
     return classical, quantum
-
-
-if __name__ == "__main__":
-    dataFolder = Path("data/ml-100k")
-    df = loadMovieLens(dataFolder)
-
-    userId = 1
-    classical, quantum = hybrid_recommend(df, userId)
-
-    print("\nClassical:")
-    print(classical)
-
-    print("\nQuantum:")
-    print(quantum)
