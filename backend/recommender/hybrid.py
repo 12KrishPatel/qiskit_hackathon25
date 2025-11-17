@@ -1,4 +1,5 @@
 import pandas as pd
+
 from recommender.classical import (
     build_user_item,
     computeAdjustedSimilarity,
@@ -17,16 +18,13 @@ def hybrid_recommend(
     if not external_ratings:
         raise ValueError("No external ratings given.")
 
-    # Build user-item structures
     userItem = build_user_item(df)
     itemSim = computeAdjustedSimilarity(userItem)
 
-    # Create a fake user row
     new_user = userItem.index.max() + 1
     extended = userItem.copy()
     extended.loc[new_user] = float("nan")
 
-    # Insert user's ratings
     for movie, rating in external_ratings.items():
         if movie in extended.columns:
             extended.at[new_user, movie] = float(rating)
@@ -35,8 +33,8 @@ def hybrid_recommend(
         extended,
         itemSim,
         userId=new_user,
-        topN=top_classical,
-        k=30
+        topN=top_classical,  # get top 20
+        k=30,
     )
 
     if classical_series.empty:
@@ -45,11 +43,10 @@ def hybrid_recommend(
     items = classical_series.index
     sim_subset = itemSim.loc[items, items]
 
-    # ---- QUANTUM ----
     quantum_dict = recommended_quantum(
         classical_series,
         sim_subset,
-        keep=top_quantum
+        keep=top_quantum,  # show up to 3 quantum picks
     )
 
     return classical_series, quantum_dict

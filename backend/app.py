@@ -8,6 +8,7 @@ from recommender.hybrid import hybrid_recommend
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+# Load MovieLens once at startup
 df = loadMovieLens(Path("data/ml-100k"))
 
 
@@ -15,42 +16,42 @@ df = loadMovieLens(Path("data/ml-100k"))
 def health():
     return {"status": "ok", "message": "Backend running"}
 
+
 @app.get("/movies")
 def movies():
-    titles = sorted(df['item'].unique())
+    titles = sorted(df["item"].unique())
     return jsonify(titles)
-
 
 
 @app.post("/recommend")
 def recommend():
-    print("/recommend CALLED", flush=True)
+    print("=== /recommend hit ===")
+    data = request.get_json() or {}
+    print("Incoming payload:", data)
 
-    data = request.json
-    print("Incoming data:", data, flush=True)
+    ratings = data.get("ratings", {})
+    if not isinstance(ratings, dict):
+        return jsonify({"error": "Invalid payload: 'ratings' must be a dict"}), 400
 
     try:
-        classical, quantum = hybrid_recommend(
-            df,
-            data["ratings"]
-        )
+        classical, quantum = hybrid_recommend(df, ratings)
 
-        print("Hybrid result OK", flush=True)
-
-        return jsonify({
+        response = {
             "classical": classical.to_dict(),
-            "quantum": quantum if isinstance(quantum, dict) else quantum.to_dict()
-        })
+            "quantum": quantum,
+        }
+
+        print("Recommendation response ready.")
+        return jsonify(response)
 
     except Exception as e:
         import traceback
-        print("\n\nHYBRID ERROR", flush=True)
+
+        print("\n--- Error while computing recommendations ---")
         traceback.print_exc()
-        print("END ERROR\n\n", flush=True)
+        print("--- End error ---\n")
 
         return jsonify({"error": str(e)}), 500
-
-
 
 
 if __name__ == "__main__":

@@ -21,13 +21,13 @@ function RateMovies({ movies = [] }) {
 	const fetchPoster = async (title) => {
 		const cleaned = cleanTitle(title);
 		if (!TMDB_API_KEY) return null;
-
+	
 		try {
 			const res = await axios.get("https://api.themoviedb.org/3/search/movie", {
 				params: { api_key: TMDB_API_KEY, query: cleaned },
 			});
-
-			if (res.data.results.length > 0) {
+	
+			if (res.data.results.length > 0 && res.data.results[0].poster_path) {
 				return (
 					"https://image.tmdb.org/t/p/w500" +
 					res.data.results[0].poster_path
@@ -36,18 +36,22 @@ function RateMovies({ movies = [] }) {
 		} catch (err) {
 			console.error("Poster fetch error:", err);
 		}
-
+	
 		return null;
 	};
 
 	useEffect(() => {
 		if (!movies.length) return;
 		const load = async () => {
+			console.log("TMDB_API_KEY exists:", !!TMDB_API_KEY); // Check if key is loaded
 			const p = {};
 			for (let m of movies) {
-				p[m.title] = await fetchPoster(m.title);
+				const posterUrl = await fetchPoster(m.title);
+				console.log(`Movie: ${m.title}, Poster URL:`, posterUrl); // See what URLs we're getting
+				p[m.title] = posterUrl;
 			}
 			setPosters(p);
+			console.log("Final posters object:", p); // See the complete state
 		};
 		load();
 	}, [movies]);
