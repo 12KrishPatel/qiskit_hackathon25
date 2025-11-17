@@ -24,23 +24,33 @@ def movies():
 
 @app.post("/recommend")
 def recommend():
+    print("/recommend CALLED", flush=True)
+
     data = request.json
-
-    # Validate incoming data
-    if "ratings" not in data or not isinstance(data["ratings"], dict):
-        return jsonify({"error": "Missing or invalid 'ratings' field"}), 400
-
-    user_ratings = data["ratings"]  # dict: movie → rating
+    print("Incoming data:", data, flush=True)
 
     try:
-        classical, quantum = hybrid_recommend(df, user_ratings)
+        classical, quantum = hybrid_recommend(
+            df,
+            data["ratings"]
+        )
+
+        print("Hybrid result OK", flush=True)
+
+        return jsonify({
+            "classical": classical.to_dict(),
+            "quantum": quantum if isinstance(quantum, dict) else quantum.to_dict()
+        })
+
     except Exception as e:
+        import traceback
+        print("\n\nHYBRID ERROR", flush=True)
+        traceback.print_exc()
+        print("END ERROR\n\n", flush=True)
+
         return jsonify({"error": str(e)}), 500
 
-    return jsonify({
-        "classical": classical.to_dict(),
-        "quantum": quantum.to_dict()
-    })
+
 
 
 if __name__ == "__main__":

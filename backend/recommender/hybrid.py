@@ -1,6 +1,4 @@
 import pandas as pd
-import numpy as np
-
 from recommender.classical import (
     build_user_item,
     computeAdjustedSimilarity,
@@ -12,34 +10,46 @@ from recommender.quantum import recommended_quantum
 def hybrid_recommend(
     df: pd.DataFrame,
     external_ratings: dict,
-    topK: int = 5,
+    top_classical: int = 20,
+    top_quantum: int = 3,
 ):
-    """
-    external_ratings: dict like:
-        {
-            "Interstellar": 5,
-            "Inception": 4,
-            "Pulp Fiction": 2
-        }
-    """
 
     if not external_ratings:
         raise ValueError("No external ratings given.")
 
-    ext_series = pd.Series(external_ratings)
-
+    # Build user-item structures
     userItem = build_user_item(df)
-    sim = computeAdjustedSimilarity(userItem)
+    itemSim = computeAdjustedSimilarity(userItem)
 
-    # We only need similarity values for the items user rated
-    items = ext_series.index
-    sim_subset = sim.loc[items, items]
+    # Create a fake user row
+    new_user = userItem.index.max() + 1
+    extended = userItem.copy()
+    extended.loc[new_user] = float("nan")
 
-    # Classical Top-N using similarity
-    classical = ext_series.sort_values(ascending=False).head(topK)
+    # Insert user's ratings
+    for movie, rating in external_ratings.items():
+        if movie in extended.columns:
+            extended.at[new_user, movie] = float(rating)
 
+    classical_series = recommendItems(
+        extended,
+        itemSim,
+        userId=new_user,
+        topN=top_classical,
+        k=30
+    )
 
-    # Quantum optimization over the classical top items
-    quantum = recommended_quantum(classical, sim_subset)
+    if classical_series.empty:
+        return classical_series, {}
 
-    return classical, quantum
+    items = classical_series.index
+    sim_subset = itemSim.loc[items, items]
+
+    # ---- QUANTUM ----
+    quantum_dict = recommended_quantum(
+        classical_series,
+        sim_subset,
+        keep=top_quantum
+    )
+
+    return classical_series, quantum_dict
