@@ -22,7 +22,64 @@ Features
 Quickstart (For Judges)
 
 The following instructions run the full app locally in under a minute.
+
+1. Clone the Repository
 ```
 git clone https://github.com/12KrishPatel/qiskit_hackathon25
 cd qiskit_hackathon25
 ```
+
+2. Create and activate a virtual environment
+```
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+```
+
+3. Install backend dependencies
+```
+pip install -r requirements.txt
+```
+
+4. Start the backend
+```
+python app.py
+```
+
+Backend runs at:
+```
+http://localhost:5001
+```
+Leave this terminal open.
+
+Frontend Setup (React)
+
+Open a second terminal window.
+
+1. Install frontend dependencies
+```
+cd frontend
+npm install
+```
+
+2. Start the frontend
+```
+npm start
+```
+
+Frontend runs at:
+```
+http://localhost:3000
+```
+
+Using the App
+
+Open http://localhost:3000
+
+Rate several movies (1–5)
+
+Click Get Recommendations
+
+The backend computes classical scores, runs QAOA, and returns a curated movie list
+
+The UI will show posters and recommended movie titles.
