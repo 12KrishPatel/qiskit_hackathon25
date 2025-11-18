@@ -27,10 +27,10 @@ def build_qubo(ratings: pd.Series,
     for i in range(n):
         qp.binary_var(name=f"x{i}")
 
-    # Linear term: reward high-rated movies
+    # reward high-rated movies
     linear = {f"x{i}": float(ratings.iloc[i]) for i in range(n)}
 
-    # Quadratic term: penalize picking very similar movies together
+    # penalize picking very similar movies together
     quadratic = {}
     for i in range(n):
         for j in range(i + 1, n):
@@ -52,7 +52,6 @@ def solve_qubo(qp: QuadraticProgram):
     algo = MinimumEigenOptimizer(qaoa)
     result = algo.solve(qp)
 
-    # Convert result.x (array) into a dict: {"x0": 0, "x1": 1, ...}
     return {
         var.name: int(val)
         for var, val in zip(qp.variables, result.x)
@@ -78,15 +77,13 @@ def recommended_quantum(
     if classicalRecs.empty:
         raise ValueError("No classical recommendations provided")
 
-    # Use the best few classical items for the quantum step
     classicalRecs = classicalRecs.sort_values(ascending=False)
     small = classicalRecs.head(max_items_qubo)
     items = small.index.tolist()
 
-    # Build penalty matrix for just those items
     penalty = similarity.loc[items, items].to_numpy()
 
-    # Build and solve the QUBO with QAOA (real Qiskit part)
+    # Build and solve the QUBO with QAOA
     qp = build_qubo(small, penalty, lam)
     solution = solve_qubo(qp)
 
@@ -100,7 +97,7 @@ def recommended_quantum(
         }
     )
 
-    # Keep only those chosen by QAOA, sort by rating, take top `keep`
+    # Keep only those chosen by QAOA
     chosen = (
         data[data["selected"] == 1]
         .sort_values("rating", ascending=False)
@@ -112,7 +109,6 @@ def recommended_quantum(
 
 
 if __name__ == "__main__":
-    # Tiny sanity check if you ever want to run this file directly
     top_classical = pd.Series(
         [4.5, 4.3, 3.8, 3.6, 3.2],
         index=["Movie A", "Movie B", "Movie C", "Movie D", "Movie E"],
