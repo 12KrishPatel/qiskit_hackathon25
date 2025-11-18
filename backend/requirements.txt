@@ -1,0 +1,10 @@
+qiskit
+qiskit-optimization
+pandas
+numpy
+scikit-learn
+matplotlib
+pytest
+flask
+flask-cors
+qiskit
