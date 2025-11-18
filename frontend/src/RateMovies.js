@@ -67,7 +67,7 @@ function RateMovies({ movies = [] }) {
 
 	return (
 		<div style={{ padding: 20 }}>
-			<h1>⭐ Rate Movies</h1>
+			<h1>⭐ Quantum Movie Recommender</h1>
 
 			<div style={{ display: "flex", alignItems: "center" }}>
 				<button onClick={scrollLeft}>⬅</button>

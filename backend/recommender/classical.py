@@ -22,9 +22,6 @@ def loadMovieLens(dataFolder: Path) -> pd.DataFrame:
     df = ratings.merge(movies, on="itemId")[["user", "item", "rating"]]
     return df
 
-
-
-
 def build_user_item(df: pd.DataFrame) -> pd.DataFrame:
     return df.pivot_table(
         index="user",
@@ -32,8 +29,6 @@ def build_user_item(df: pd.DataFrame) -> pd.DataFrame:
         values="rating",
         aggfunc="mean"
     )
-
-
 
 def computeAdjustedSimilarity(userItem: pd.DataFrame, min_support: int = 1) -> pd.DataFrame:
     means = userItem.mean(axis=1)
@@ -53,7 +48,6 @@ def computeAdjustedSimilarity(userItem: pd.DataFrame, min_support: int = 1) -> p
     np.fill_diagonal(sim_df.values, 1.0)
 
     return sim_df
-
 
 def recommendItems(
     userItem: pd.DataFrame,
