@@ -19,7 +19,8 @@ def health():
 
 @app.get("/movies")
 def movies():
-    titles = sorted(df["item"].unique())
+    movie_counts = df["item"].value_counts()
+    titles = movie_counts.index.tolist()
     return jsonify(titles)
 
 

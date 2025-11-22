@@ -10,7 +10,7 @@ function App() {
       .then((data) => {
         console.log("Loaded movies:", data.length);
   
-        const formatted = data.slice(0, 100).map((t) => ({ title: t }));
+        const formatted = data.slice(0, 150).map((t) => ({ title: t }));
         setMovieList(formatted);
       })
       .catch((err) => console.error("Failed to load movie list:", err));

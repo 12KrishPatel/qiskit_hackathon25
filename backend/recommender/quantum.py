@@ -28,15 +28,15 @@ def build_qubo(ratings: pd.Series,
         qp.binary_var(name=f"x{i}")
 
     # reward high-rated movies
-    linear = {f"x{i}": float(ratings.iloc[i]) for i in range(n)}
+    linear = {f"x{i}": -float(ratings.iloc[i]) for i in range(n)}
 
     # penalize picking very similar movies together
     quadratic = {}
     for i in range(n):
         for j in range(i + 1, n):
-            quadratic[(f"x{i}", f"x{j}")] = -lam * float(penalty[i, j])
+            quadratic[(f"x{i}", f"x{j}")] = lam * float(penalty[i, j])
 
-    qp.maximize(linear=linear, quadratic=quadratic)
+    qp.minimize(linear=linear, quadratic=quadratic)
     return qp
 
 
