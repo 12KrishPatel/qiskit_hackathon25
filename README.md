@@ -1,4 +1,4 @@
-Quantum Recommender
+Quantum Recommender - 3rd Place at IBM Qiskit x WQCC Hackathon
 
 A hybrid classical–quantum movie recommendation system built with React, Flask, and Qiskit.
 Users rate movies in the frontend, and the backend generates recommendations using classical similarity scoring combined with a QAOA-optimized QUBO solution.
